@@ -162,7 +162,7 @@ import cerberus
 
 import schema
 
-OSM_PATH = "example.osm"
+OSM_PATH = "C:\Users\SHLEE\Desktop\Programming\data-analysis\chapter3\example.osm"
 
 NODES_PATH = "nodes.csv"
 NODE_TAGS_PATH = "nodes_tags.csv"

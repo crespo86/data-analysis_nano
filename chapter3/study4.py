@@ -24,15 +24,14 @@ expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square"
 # UPDATE THIS VARIABLE
 mapping = { "St": "Street",
             "St.": "Street"
-            }
+            "Ave": "Avenue"
+            "Rd.":"Road"}
 
 
 def audit_street_type(street_types, street_name):
     m = street_type_re.search(street_name)
-    print m
     if m:
         street_type = m.group()
-        print street_type
         if street_type not in expected:
             street_types[street_type].add(street_name)
 
