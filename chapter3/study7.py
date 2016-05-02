@@ -11,6 +11,8 @@ from autos import process_file
 
 def insert_autos(infile, db):
     data = process_file(infile)
+    for a in data:
+        db.autos.insert(a)
     # Add your code here. Insert the data in one command.
 
 
@@ -20,5 +22,5 @@ if __name__ == "__main__":
     client = MongoClient("mongodb://localhost:27017")
     db = client.examples
 
-    insert_autos('autos-small.csv', db)
+    insert_autos('/home/shlee/Desktop/Programming/data-nano/chapter3/auto-small.csv', db)
     print db.autos.find_one()
