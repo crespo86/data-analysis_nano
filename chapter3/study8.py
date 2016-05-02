@@ -22,7 +22,7 @@ def range_query():
 # Code here is for local use on your own computer.
 def get_db():
     from pymongo import MongoClient
-    client = MongoClient('localhost:27017')
+    client = MongoClient("mongodb://localhost:27017")
     db = client.examples
     return db
 
