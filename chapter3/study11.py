@@ -30,8 +30,12 @@ def get_db(db_name):
     return db
 
 def make_pipeline():
-    # complete the aggregation pipeline
-    pipeline = []
+    pipeline = [{ "$match" : { "country" : "India" }},
+                { "$unwind" : "$isPartOf" },
+                { "$group" : { "_id" : "$isPartOf" , "count" : { "$sum" : 1 } } },
+                { "$sort" : { "count" : -1 } },
+                { "$limit" : 1 }
+                ]
     return pipeline
 
 def aggregate(db, pipeline):
