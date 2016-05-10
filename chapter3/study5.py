@@ -162,7 +162,7 @@ import cerberus
 
 import schema
 
-OSM_PATH = "C:\Users\SHLEE\Desktop\Programming\data-analysis\chapter3\example.osm"
+OSM_PATH = "/home/shlee/Downloads/ellicott_city.osm"
 
 NODES_PATH = "nodes.csv"
 NODE_TAGS_PATH = "nodes_tags.csv"
@@ -182,22 +182,108 @@ WAY_FIELDS = ['id', 'user', 'uid', 'version', 'changeset', 'timestamp']
 WAY_TAGS_FIELDS = ['id', 'key', 'value', 'type']
 WAY_NODES_FIELDS = ['id', 'node_id', 'position']
 
+# to aduit street name, I made expected street name and mapping data
+expected = ["Pike", "Walk", "run", "Trail", "Avenue", "Lane", "Place", "Path", "Parkway", "Street", "Road", "Circle", "Drive", "Way", "Alley", "Terrace", "Court"]
+
+mapping = { "Trl": "Trail",
+            "Ave:Rd": "Avenue",
+            "Ln": "Lane",
+            "Pl:Rd":"Place",
+            "Pky": "Parkway",
+            "St": "Street",
+            "Rd": "Road",
+            "Cir": "Circle",
+            "Dr:Rd": "Drive",
+            "Aly": "Alley",
+            "Ave": "Avenue",
+            "Ter": "Terrace",
+            "Dr": "Drive",
+            "Pl": "Place",
+            "Ct": "Court",
+            "Sq": "Square",
+            "Ave:Dr" : "Avenue",
+            "Cir:Ct" : "Circle",
+            "Dr:St" : "Drive",
+            "Blvd" : "Boulevard",
+            "Ave; Rd" : "Avenue",
+            "Dr:St" : "Drive",
+            "Dr:Ln:Rd" : "Drive",
+            "Dr:Ln" : "Drive"}
+
+def update(name, mapping):
+    '''
+    mapping street name
+    '''
+
+    try:
+        name = mapping[name]
+        return name
+    except:
+        return name
 
 def shape_element(element, node_attr_fields=NODE_FIELDS, way_attr_fields=WAY_FIELDS,
                   problem_chars=PROBLEMCHARS, default_tag_type='regular'):
     """Clean and shape node or way XML element to Python dict"""
-
-    node_attribs = {}
-    way_attribs = {}
+    # basic set of CVS files
+    node_attribs = {'id' : 0.0,
+                    'user' : "",
+                    'uid' : 0,
+                    'version' : 0,
+                    'lat' : 0.0,
+                    'lon' : 0.0,
+                    'timestamp' : '',
+                    'changeset' : 0,
+                    }
+    way_attribs = {'id' : 0.0,
+                   'user' : "",
+                   'uid' : 0,
+                   'version' : 0,
+                   'timestamp' : '',
+                   'changeset' : 0
+                   }
     way_nodes = []
-    tags = []  # Handle secondary tags the same way for both node and way elements
+    tags = []
 
-    # YOUR CODE HERE
+    # tag part: node and way both have tag so I don't make it twice
+    for n in element.iter('tag'):
+        if n.attrib['k'].find(':') == -1:
+            tag = {'id': element.attrib['id'],
+                   'key': n.attrib['k'],
+                   'value': n.attrib['v'],
+                   'type': 'regular'}
+        else:
+            tag = {'id': element.attrib['id'],
+                   'key': n.attrib['k'][n.attrib['k'].find(':')+1:],
+                   'value': update(n.attrib['v'],mapping),
+                   'type': n.attrib['k'][0:n.attrib['k'].find(':')]}
+        tags.append(tag)
+
+    # node part
     if element.tag == 'node':
-        return {'node': node_attribs, 'node_tags': tags}
-    elif element.tag == 'way':
-        return {'way': way_attribs, 'way_nodes': way_nodes, 'way_tags': tags}
 
+        for e in element.attrib:
+            if e in NODE_FIELDS:
+                node_attribs[e] = element.attrib[e]
+
+        return {'node': node_attribs, 'node_tags': tags}
+
+    # way part1(ways): there are two kinds of way (ways, ways_node) so i have to make both.
+    elif element.tag == 'way':
+
+        for e in element.attrib:
+            if e in WAY_FIELDS:
+                way_attribs[e] = element.attrib[e]
+
+    # way part2(ways_nodes): there are two kinds of way (ways, ways_node) so i have to make both.
+        a = 0
+        for n in element.iter('nd'):
+            abc = {'id' : element.attrib['id'],
+                   'node_id': n.attrib['ref'],
+                   'position' : a}
+            a += 1
+            way_nodes.append(abc)
+
+        return {'way': way_attribs, 'way_nodes': way_nodes, 'way_tags': tags}
 
 # ================================================== #
 #               Helper Functions                     #
